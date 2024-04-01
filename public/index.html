@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>주문 화면</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("http://localhost:3000");
+    const btn = () => {
+      var inputValue = document.getElementById("inputField").value;
+      socket.emit('click', inputValue)
+    }
+  </script>
+</head>
+<body>
+  <h1>주문</h1>
+  
+  <input type="text" id="inputField">
+  <button onclick="btn()">전송</button>
+</body>
+</html>

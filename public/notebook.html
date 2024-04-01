@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노트북 수락 화면</title>
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div id="container"></div>
+  
+  <script>
+    const socket = io("http://localhost:3000");
+    socket.on('sendNotebook', (data) => {
+        addDiv(data);
+    })
+    var counter = 1;
+    
+    function addDiv(data) {
+      var newDiv = document.createElement("div");
+      
+      newDiv.id = "div" + counter;
+      newDiv.innerHTML = "주문: " + data + "<br>";
+      
+      var acceptButton = document.createElement("button");
+      acceptButton.textContent = "Accept";
+      acceptButton.onclick = function() {
+        socket.emit('order', data);
+        removeDiv(newDiv.id);
+      };
+      
+      var rejectButton = document.createElement("button");
+      rejectButton.textContent = "Reject";
+      rejectButton.onclick = function() {
+        removeDiv(newDiv.id);
+      };
+      
+      newDiv.appendChild(acceptButton);
+      newDiv.appendChild(rejectButton);
+      
+      document.getElementById("container").appendChild(newDiv);
+      
+      counter++;
+    }
+    
+    function removeDiv(divId) {
+      var divToRemove = document.getElementById(divId);
+      if (divToRemove) {
+        divToRemove.parentNode.removeChild(divToRemove);
+      }
+    }
+  </script>
+</body>
+</html>

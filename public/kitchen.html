@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 5px;
+    }
+    .cell {
+      height: 150px;
+      border: 1px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+  </style>
+  <title>주방 화면</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+  </div>
+  <button onclick="removeContent(1)">Remove 1</button>
+  <button onclick="removeContent(2)">Remove 2</button>
+  <button onclick="removeContent(3)">Remove 3</button>
+  <button onclick="removeContent(4)">Remove 4</button>
+  <button onclick="removeContent(5)">Remove 5</button>
+  <button onclick="removeContent(6)">Remove 6</button>
+  <button onclick="removeContent(7)">Remove 7</button>
+  <button onclick="removeContent(8)">Remove 8</button>
+  
+  <script>
+    let number = 0;
+    const socket = io("http://localhost:3000");
+    socket.on('sendKitchen', (data) => {
+      addNumber(data);
+    })
+    function addNumber(data) {
+      if (number == 8) {return;}
+      number++;
+      const cells = document.querySelectorAll('.cell');
+      cells[number - 1].innerText = data;
+    }
+    function removeContent(num) {
+      const cells = document.querySelectorAll('.cell');
+      for (let i = num - 1; i < cells.length - 1; i++) {
+        cells[i].innerText = cells[i + 1].innerText;
+      }
+      cells[cells.length - 1].innerText = '';
+      number--;
+    }
+  </script>
+</body>
+</html>
