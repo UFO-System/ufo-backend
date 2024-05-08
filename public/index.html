@@ -3,19 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <title>주문 화면</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #orderDetails { margin-top: 20px; }
+  </style>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io("http://localhost:3000");
-    const btn = () => {
-      var inputValue = document.getElementById("inputField").value;
-      socket.emit('click', inputValue)
+    const socket = io('http://localhost:3000');
+
+    function fetchOrderDetails() {
+      const orderId = document.getElementById('orderId').value;
+      if (orderId) {
+        socket.emit('orderList', orderId);
+      } else {
+        alert('Please enter an order ID.');
+      }
     }
+  
+    socket.on('orderListResponse', function(data) {
+      const orderDetailsDiv = document.getElementById('orderDetails');
+      orderDetailsDiv.innerHTML = ''; // Clear previous details
+      if (data.length > 0) {
+        const formatOrder = order => `Order ID: ${order.order_id}\nOrder Number: ${order.order_num}\nMenu ID: ${order.menu_id}\nAdmin ID: ${order.admin_id}\nTable: ${order.order_table}\nDate: ${order.order_date}\nState: ${order.order_state}\nCount: ${order.order_cnt}<br>`;
+        const orderTexts = data.map(order => formatOrder(order)).join('\n\n');
+
+        orderDetailsDiv.innerHTML = `<p>${orderTexts}<br></p>`;
+      } else {
+        orderDetailsDiv.innerHTML = '<p>No details found for this order.</p>';
+      }
+    });
+  
+    socket.on('error', function(message) {
+      alert('Error: ' + message);
+    });
   </script>
 </head>
 <body>
-  <h1>주문</h1>
+  <h1>Order Details</h1>
+  <label for="orderId">Enter Order ID:</label>
+  <input type="text" id="orderId">
+  <button onclick="fetchOrderDetails()">Get Details</button>
   
-  <input type="text" id="inputField">
-  <button onclick="btn()">전송</button>
+  <div id="orderDetails"></div>
 </body>
 </html>
