@@ -1,6 +1,7 @@
-const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors');
 const db = require('./config/db');
 const apiRouter = require('./routes/api');
 const indexRouter = require('./routes/index');
@@ -13,12 +14,13 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.static('public'));
+app.use(cors())
 
 
-app.use('/', apiRouter);
+app.use('/api', apiRouter);
 app.use('/', indexRouter);
-app.use('/', notebookRouter);
-app.use('/', kitchenRouter);
+app.use('/notebook', notebookRouter);
+app.use('/kitchen', kitchenRouter);
 
 setupWebSocket(io);
 
