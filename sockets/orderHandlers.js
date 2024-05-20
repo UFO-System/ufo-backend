@@ -1,29 +1,36 @@
 const db = require('../config/db');
 
-function queryOrderList(admin_id) {
+function requestOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM `Order` WHERE admin_id = ?';
-        db.query(sql, [admin_id], (err, results) => {
+        const sql = '오더 추가 sql문';
+        db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);
         });
     });
 }
-
-function queryOrderInsert(admin_id) {
+function acceptOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO `Order(order_num, menu_id, admin_id, order_table, order_date, order_state, order_cnt) values(?, ?, ?, ?, ?, ?, ?)`';
-        db.query(sql, [admin_id], (err, results) => {
+        const sql = '오더 수락 sql문';
+        db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);
         });
     });
 }
-
-function queryOrderDelete(admin_id) {
+function declineOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM `Order` WHERE order_id = ?';
-        db.query(sql, [admin_id], (err, results) => {
+        const sql = '오더 거절 sql문';
+        db.query(sql, data, (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+        });
+    });
+}
+function completeOrderQuery(data) {
+    return new Promise((resolve, reject) => {
+        const sql = '오더 완료 sql문';
+        db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);
         });
@@ -31,30 +38,40 @@ function queryOrderDelete(admin_id) {
 }
 
 module.exports = (socket) => {
-    socket.on("orderList", async (admin_id) => {
+    socket.on("requestOrder", async (data) => {
         try {
-            const results = await queryOrderList(admin_id);
-            socket.emit("orderListResponse", results);
-        } catch (err) {
-            socket.emit("error", "Database query failed.");
-            console.error(err);
-        }
-    });
-
-    socket.on("orderInsert", async (admin_id) => {
-        try {
-            const results = await queryOrderInsert(admin_id);
-            socket.emit("orderInsertResponse", results);
+            const results = await requestOrderQuery(data);
+            socket.emit("requestOrderResponse", results);
         } catch (err) {
             socket.emit("error", "Database query failed.");
             console.error(err);
         }
     })
 
-    socket.on("orderDelete", async (admin_id) => {
+    socket.on("acceptOrder", async (data) => {
         try {
-            const results = await queryOrderDelete(admin_id);
-            socket.emit("orderDeleteResponse", results);
+            const results = await acceptOrderQuery(data);
+            socket.emit("acceptOrderResponse", results);
+        } catch (err) {
+            socket.emit("error", "Database query failed.");
+            console.error(err);
+        }
+    });
+
+    socket.on("declineOrder", async (data) => {
+        try {
+            const results = await declineOrderQuery(data);
+            socket.emit("declineOrderResponse", results);
+        } catch (err) {
+            socket.emit("error", "Database query failed.");
+            console.error(err);
+        }
+    })
+
+    socket.on("completeOrder", async (data) => {
+        try {
+            const results = await completeOrderQuery(data);
+            socket.emit("completeOrderResponse", results);
         } catch (err) {
             socket.emit("error", "Database query failed.");
             console.error(err);
