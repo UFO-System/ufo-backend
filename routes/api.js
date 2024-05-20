@@ -7,9 +7,11 @@ const { emitDepositEvent } = require('../sockets/apiHandlers');
 
 // API post로 받아오기
 router.post('/deposit', function(req, res) {
-  const data = req.body;
-  emitDepositEvent(data);
-  console.log(data);
+  if (req.body.transaction_type === "deposited"){
+    const data = transformData(req.body);
+    console.log(data);
+    emitDepositEvent(data);
+  }
 });
 
 // 로그인 API
@@ -44,5 +46,32 @@ router.post('/register', (req, res) => {
         res.status(201).json({ message: 'Registration successful' });
     });
 });
+
+// API json 매핑 함수
+function transformData(input) {
+    return {
+        "bank": bankCodes[input.bank_code] || input.bank_code,
+        "bank_account": input.account_number,
+        "pay_name": input.deposited_name,
+        "pay_price": input.amount
+    };
+}
+
+const bankCodes = {
+    "003": "기업은행",
+    "004": "국민은행",
+    "007": "수협중앙회",
+    "011": "농협은행",
+    "020": "우리은행",
+    "023": "SC은행",
+    "027": "한국씨티은행",
+    "032": "부산은행",
+    "034": "광주은행",
+    "045": "새마을금고중앙회",
+    "071": "우체국",
+    "081": "KEB하나은행",
+    "088": "신한은행"
+};
+
 
 module.exports = router;
