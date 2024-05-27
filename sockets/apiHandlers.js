@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 function insertDepositTransaction(data) {
     return new Promise((resolve, reject) => {
-        const sql = '계좌 정보로 아이디 찾아 Insert 하는 sql문';
+        const sql = '계좌 정보로 아이디 찾아 Insert 하는 sql문(API 변경으로 추후 수정)';
         db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);

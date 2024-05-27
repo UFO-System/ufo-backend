@@ -2,25 +2,36 @@ const db = require('../config/db');
 
 function requestOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = '오더 추가 sql문';
-        db.query(sql, data, (err, results) => {
-            if (err) reject(err);
-            resolve(results);
+        const sql = 'CALL createOrder(?, ?, CURDATE(), ?, ?, ?);';
+        const params = [data.adminId, data.isAccept, data.tableNum, data.bank_name, data.menu];
+
+        db.query(sql, params, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            const statusMessage = results[1][0].statusMessage;
+            resolve({ results: results[0], statusMessage });
         });
     });
 }
 function acceptOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = '오더 수락 sql문';
-        db.query(sql, data, (err, results) => {
-            if (err) reject(err);
-            resolve(results);
+        const sql = 'CALL acceptOrder(?, @result); SELECT @result AS result;';
+        const params = [data.orderId];
+        
+        db.query(sql, params, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            const resultMessage = results[1][0].result;
+            resolve({ results: results[0], resultMessage});
         });
     });
 }
 function declineOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = '오더 거절 sql문';
+        const sql = 'CALL rejectOrder(?);';
+        const params = [data.orderId];
         db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);
@@ -29,7 +40,8 @@ function declineOrderQuery(data) {
 }
 function completeOrderQuery(data) {
     return new Promise((resolve, reject) => {
-        const sql = '오더 완료 sql문';
+        const sql = 'CALL completeOrder(?);';
+        const params = [data.orderId];
         db.query(sql, data, (err, results) => {
             if (err) reject(err);
             resolve(results);

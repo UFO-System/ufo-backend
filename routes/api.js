@@ -16,13 +16,16 @@ router.post('/deposit', function(req, res) {
 
 // 로그인 API
 router.post('/login', (req, res) => {
-    const { userid, password } = req.body;
-    const query = '유저 찾는 쿼리';
+    const { adminId, password } = req.body;
+    const query = 'CALL Login(?, ?, @p_status_message); SELECT @p_status_message AS statusMessage;';
+    const hashedPassword = hashPassword(password);
+    const params = [adminId, hashedPassword];
 
-    db.query(query, [userid], async (err, results) => {
+    db.query(query, params, async (err, results) => {
         if (err) return res.status(500).json({ message: err.message });
-        if (results.length === 0 || !(await bcrypt.compare(password, results[0].password))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+        const statusMessage = results[1][0].statusMessage;
+        if (statusMessage !== 'Login successful') {
+            return res.status(401).json({ message: 'Invalid credentials', statusMessage });
         }
 
         const token = jwt.sign({ id: results[0].id }, process.env.JWT_SECRET, { expiresIn: '24h' });
@@ -33,17 +36,18 @@ router.post('/login', (req, res) => {
 // 회원가입 API
 router.post('/register', (req, res) => {
     console.log(req.body);
-    const { userid, password, name, account } = req.body;
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    const query = '유저 추가 쿼리';
+    const { adminId, password, adminName, bank_name, bank_account, phone_number, member } = req.body;
+    const hashedPassword = hashPassword(password);
+    const query = 'CALL RegisterAdmin(?, ?, ?, ?, ?, ?, ?, @p_status_message); SELECT @p_status_message AS statusMessage;';
+    const params = [adminId, hashedPassword, adminName, bank_name, bank_account, phone_number, member]
 
-    db.query(query, [userid, hashedPassword, name, account], (err, result) => {
+    db.query(query, params, (err, result) => {
         if (err) {
             console.error('Error during registration:', err);
             return res.status(500).json({ message: 'Error during registration' });
         }
-        res.status(201).json({ message: 'Registration successful' });
+        const statusMessage = result[1][0].statusMessage;
+        res.status(201).json({ message: 'Registration successful', statusMessage });
     });
 });
 
@@ -73,5 +77,8 @@ const bankCodes = {
     "088": "신한은행"
 };
 
+function hashPassword(password) {
+    return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 module.exports = router;

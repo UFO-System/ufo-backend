@@ -1,67 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    .container {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-      gap: 5px;
-    }
-    .cell {
-      height: 150px;
-      border: 1px solid #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-  </style>
-  <title>주방 화면</title>
-  <script src="/socket.io/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Submission</title>
 </head>
 <body>
-  <div class="container">
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-  </div>
-  <button onclick="removeContent(1)">Remove 1</button>
-  <button onclick="removeContent(2)">Remove 2</button>
-  <button onclick="removeContent(3)">Remove 3</button>
-  <button onclick="removeContent(4)">Remove 4</button>
-  <button onclick="removeContent(5)">Remove 5</button>
-  <button onclick="removeContent(6)">Remove 6</button>
-  <button onclick="removeContent(7)">Remove 7</button>
-  <button onclick="removeContent(8)">Remove 8</button>
-  
-  <script>
-    let number = 0;
-    const socket = io("http://localhost:3000");
-    socket.on('sendKitchen', (data) => {
-      addNumber(data);
-    })
-    function addNumber(data) {
-      if (number == 8) {return;}
-      number++;
-      const cells = document.querySelectorAll('.cell');
-      cells[number - 1].innerText = data;
-    }
-    function removeContent(num) {
-      const cells = document.querySelectorAll('.cell');
-      for (let i = num - 1; i < cells.length - 1; i++) {
-        cells[i].innerText = cells[i + 1].innerText;
-      }
-      cells[cells.length - 1].innerText = '';
-      number--;
-    }
-  </script>
+    <h1>Order Submission Form</h1>
+    <form id="orderForm">
+        <label for="order_number">Order Number:</label>
+        <input type="text" id="order_number" name="order_number"><br><br>
+
+        <label for="order_amount">Order Amount:</label>
+        <input type="number" id="order_amount" name="order_amount"><br><br>
+
+        <label for="orderer_name">Orderer Name:</label>
+        <input type="text" id="orderer_name" name="orderer_name"><br><br>
+
+        <label for="orderer_phone_number">Orderer Phone Number:</label>
+        <input type="text" id="orderer_phone_number" name="orderer_phone_number"><br><br>
+
+        <label for="orderer_email">Orderer Email:</label>
+        <input type="email" id="orderer_email" name="orderer_email"><br><br>
+
+        <label for="billing_name">Billing Name:</label>
+        <input type="text" id="billing_name" name="billing_name"><br><br>
+
+        <button type="button" onclick="submitOrder()">Submit Order</button>
+    </form>
+
+    <script>
+        function submitOrder() {
+            const formData = new FormData(document.getElementById('orderForm'));
+            const data = {
+                "apikey": "30TKOVS7SV14",
+                "secretkey": "KE8GY9AGFVNA",
+                "mall_id": "1716361408725x178269586231132160",
+                "order_number": formData.get("order_number"),
+                "order_amount": parseInt(formData.get("order_amount")),
+                "order_date": new Date().toISOString(),
+                "orderer_name": formData.get("orderer_name"),
+                "orderer_phone_number": formData.get("orderer_phone_number"),
+                "orderer_email": formData.get("orderer_email"),
+                "billing_name": formData.get("billing_name")
+            };
+
+            fetch('https://payaction.app/api/1.1/wf/order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Success:', result);
+                alert('Order submitted successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error submitting the order.');
+            });
+        }
+    </script>
 </body>
 </html>
