@@ -1,5 +1,15 @@
 const db = require('../config/db');
 
+function getOrderListQuery(data) {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM `OrderTable` WHERE admin_id = ?;';
+        const params = [data.adminId];
+        db.query(sql, data, (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+        });
+    });
+}
 function requestOrderQuery(data) {
     return new Promise((resolve, reject) => {
         const sql = 'CALL createOrder(?, ?, CURDATE(), ?, ?, ?);';
@@ -50,6 +60,16 @@ function completeOrderQuery(data) {
 }
 
 module.exports = (socket) => {
+    socket.on("getOrderList", async (data) => {
+        try {
+            const results = await getOrderListQuery(data);
+            socket.emit("getOrderListResponse", results);
+        } catch (err) {
+            socket.emit("error", "Database query failed.");
+            console.error(err);
+        }
+    })
+
     socket.on("requestOrder", async (data) => {
         try {
             const results = await requestOrderQuery(data);
